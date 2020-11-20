@@ -16,8 +16,11 @@ class DklimovRating extends CBitrixComponent implements Controllerable
     {
         $ip = $_SERVER['REMOTE_ADDR'];
         $elementId = $this->arParams['ELEMENT_ID'];
+        $iblockId = $this->arParams['ELEMENT_ID'];
+        $ratingPropCode = $this->arParams['RATING_PROP_CODE'];
         $this->arResult['UPVOTE_CLASS']=htmlspecialcharsEx($this->arParams['UPVOTE_CLASS'])??"up";
         $this->arResult['DOWNVOTE_CLASS']=$this->arParams['DOWNVOTE_CLASS']??"down";
+        $this->arResult['RATING']=$this->getRating($iblockId,$elementId, $ratingPropCode);
         $this->registerAsset();
         $this->IncludeComponentTemplate();
         return $this->arResult;
@@ -59,7 +62,13 @@ class DklimovRating extends CBitrixComponent implements Controllerable
         $asset->addJs($this->getPath().'/rating.js');
         $asset->addString("<script>var upvoteClass='".$this->arResult['UPVOTE_CLASS']."';var downvoteClass='".$this->arResult['DOWNVOTE_CLASS']."';var iblockId='".$this->arParams['IBLOCK_ID']."';var ratingCode='".$this->arParams['RATING_PROP_CODE']."';var id = '".$this->arParams['ELEMENT_ID']."'</script>", true, AssetLocation::AFTER_CSS);
     }
-
+protected function getRating($iblockId,$id,$ratingCode){
+    $db_props = CIBlockElement::GetProperty($iblockId, $id, array("sort" => "asc"), array("CODE" => $ratingCode));
+    if ($ar_props = $db_props->Fetch()) {
+        $rating = IntVal($ar_props['VALUE']);
+    }
+    return $rating;
+}
     protected function addVoterIp($ip,$elementId){
         $entity = $this->connectHl();
         $arProp = array(
